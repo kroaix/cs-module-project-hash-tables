@@ -22,6 +22,13 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        #will need to change this if we ever resize
+        self.capacity = MIN_CAPACITY
+        #initializing list with 8 empty slots
+        self.storage = [None] * 8
+        #keeping track of how many items are stored
+        self.count = 0
+        
 
 
     def get_num_slots(self):
@@ -52,9 +59,20 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
-
         # Your code here
+        # offset basis for FNV-1 hash 64 bit
+        offset_basis = 14695981039346656037
+        # 64 bit FNV_prime 240 + 28 + 0xb3 = 1099511628211
+        FNV_prime = 1099511628211
 
+        key = key.encode() # ^ is otherwise unsupported.. must encode
+        hash = offset_basis
+        for byte in key:
+            hash = hash * FNV_prime
+            hash = hash ^ byte #xor operator is ^
+        return hash
+
+        
 
     def djb2(self, key):
         """
@@ -63,6 +81,11 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
+        hash = 5381
+
+        for byte in key:
+            hash = (hash * 33) + ord(byte)
+        return hash
 
 
     def hash_index(self, key):
@@ -70,8 +93,9 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        # both work!! :) 
+        return self.fnv1(key) % self.capacity
+        # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -82,6 +106,20 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current_node = self.storage[index] #temporary variable
+        if self.storage[index] is not None: #there is a value at the index
+            while current_node.key != key: 
+                if current_node.next is not None:
+                    current_node = current_node.next #looping through the linked list in search of node with matching key
+                else: #add to tail
+                    current_node.next = HashTableEntry(key, value)
+                    self.count += 1
+            else:
+                current_node.value = value #updating key with new value
+        else: #no value at index
+            self.storage[index] = HashTableEntry(key, value)
+            self.count += 1
 
 
     def delete(self, key):
@@ -93,7 +131,28 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current_node = self.storage[index]
+        if current_node is None:
+            return None
+        elif current_node.key == key: #if the keys match
+            self.storage[index] = current_node.next
+            self.count -= 1 #decrement because we are deleting
+            return
+        else: 
+            prev = current_node
+            current_node = current_node.next
 
+            while current_node is not None:
+                if current_node.key == key: #if keys match
+                    prev.next = current_node.next
+                    self.count -= 1 #decrement because we are deleting
+                    return
+                else: #keys do not match
+                    #keep looping through to find matching key
+                    prev = current_node
+                    current_node = current_node.next
+    
 
     def get(self, key):
         """
@@ -104,6 +163,18 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        index = self.hash_index(key)
+        current_node = self.storage[index]
+        if current_node is not None:
+            while current_node.key != key:
+                if current_node.next is not None:
+                    current_node = current_node.next #iterating through linked list to find key
+                else: #no matching key
+                    return None #return nothing
+            else: #if the keys match
+                return current_node.value #return that value
+        else: #if self.storage[index] is None
+            return None #return nothing
 
 
     def resize(self, new_capacity):
