@@ -42,6 +42,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.capacity
 
 
     def get_load_factor(self):
@@ -51,6 +52,9 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        #load factor is stored items/capacity
+
+        return self.count/self.capacity
 
 
     def fnv1(self, key):
@@ -106,6 +110,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        load_factor = self.get_load_factor()
+        if load_factor > 0.7:
+            self.resize(self.capacity * 2)
+            
         index = self.hash_index(key)
         current_node = self.storage[index] #temporary variable
         if self.storage[index] is not None: #there is a value at the index
@@ -131,6 +139,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        load_factor = self.get_load_factor()
+        if load_factor > 0.7:
+            self.resize(self.capacity * 2)
+            
         index = self.hash_index(key)
         current_node = self.storage[index]
         if current_node is None:
@@ -163,6 +175,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        load_factor = self.get_load_factor()
+        if load_factor > 0.7:
+            self.resize(self.capacity * 2)
+
         index = self.hash_index(key)
         current_node = self.storage[index]
         if current_node is not None:
@@ -185,6 +201,27 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        #storing load factor in variable
+        load_factor = self.get_load_factor()
+        #if load factor > 0.7
+        if load_factor > 0.7:
+            #new capacity is going to be the old capacity, doubled
+            if new_capacity <  self.capacity * 2:
+                new_capacity = self.capacity * 2
+
+        #create new list doubling current capacity
+        old_storage = self.storage
+        new_storage = [None] * new_capacity
+
+        self.capacity = new_capacity
+        self.storage = new_storage
+        #iterate through and rehash
+        for item in old_storage:
+            if item is not None:
+                current_node = item
+                while current_node is not None:
+                    self.put(current_node.key, current_node.value)
+                    current_node = current_node.next
 
 
 
